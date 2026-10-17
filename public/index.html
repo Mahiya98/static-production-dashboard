@@ -104,13 +104,13 @@
     .brand h1{font-size:17px;}
     .brand p{font-size:11px;}
     main{padding:14px 14px 48px;gap:14px;}
-    .filters{width:100%;gap:8px;}
+    .filters{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);width:100%;min-width:0;max-width:100%;gap:8px;}
     .filters > *{min-width:0;}
-    .filters select{flex:1 1 100%;}
-    .filters .rng{flex:1 1 calc(50% - 4px);}
+    .filters select{grid-column:1 / -1;}
+    .filters .rng{width:auto;}
     .filters .rng input{flex:1 1 auto;width:100%;min-width:0;}
-    .filters .btn{flex:1 1 calc(50% - 4px);}
-    .filters .asof{flex:1 1 100%;text-align:center;padding:9px 10px;}
+    .filters .btn{width:100%;padding-left:8px;padding-right:8px;}
+    .filters .asof{grid-column:1 / -1;text-align:center;padding:9px 10px;overflow:hidden;text-overflow:ellipsis;}
     .kpi{padding:13px;}
     .kpi .val{font-size:23px;}
     .big{font-size:26px;}

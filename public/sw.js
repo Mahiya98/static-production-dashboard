@@ -1,4 +1,4 @@
-var CACHE = 'pd-static-v2';
+var CACHE = 'pd-static-v3';
 var ASSETS = [
   './',
   './index.html',
