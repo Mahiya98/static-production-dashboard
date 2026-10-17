@@ -1,0 +1,9 @@
+{
+  "name": "static-prod-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Static production dashboard demo with simulated data — no external connections",
+  "scripts": {
+    "start": "node server.js"
+  }
+}

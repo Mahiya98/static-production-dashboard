@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Production Dashboard — Static Demo</title>
+<meta name="theme-color" content="#2563eb">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Production">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<style>
+  :root{
+    --bg:#f4f6fb; --card:#ffffff; --ink:#111827; --muted:#6b7280; --line:#e7eaf1;
+    --blue:#2563eb; --indigo:#6366f1; --green:#16a34a; --amber:#d97706; --pink:#e11d48;
+    --teal:#0d9488; --purple:#7c3aed; --radius:16px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;-webkit-font-smoothing:antialiased;}
+  .top-accent{height:4px;background:linear-gradient(90deg,var(--blue),var(--indigo),var(--teal),var(--green),var(--amber),var(--pink));}
+
+  header{background:#fff;border-bottom:1px solid var(--line);padding:16px 28px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;box-shadow:0 1px 3px rgba(15,23,42,.04);position:sticky;top:0;z-index:10;}
+  .brand{display:flex;align-items:center;gap:12px;margin-right:auto;}
+  .brand-mark{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--blue),var(--indigo));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:15px;box-shadow:0 4px 12px rgba(37,99,235,.28);}
+  .brand h1{margin:0;font-size:19px;font-weight:800;letter-spacing:-.01em;}
+  .brand p{margin:2px 0 0;font-size:12px;color:var(--muted);font-weight:500;}
+  .filters{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  select,input[type=date]{font:inherit;font-size:12.5px;font-weight:600;color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 12px;cursor:pointer;}
+  .btn{border:1px solid var(--line);background:#fff;color:var(--ink);font:inherit;font-size:12.5px;font-weight:700;padding:9px 14px;border-radius:10px;cursor:pointer;}
+  .btn:hover{background:#fafbfd;}
+  .asof{background:#eef2ff;border:1px solid #e0e7ff;border-radius:10px;padding:9px 14px;font-size:12px;font-weight:600;color:var(--muted);}
+  .asof b{color:var(--indigo);}
+  .chk{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 12px;cursor:pointer;user-select:none;}
+  .chk input{accent-color:var(--blue);cursor:pointer;}
+  .rng{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--muted);background:#fff;border:1px solid var(--line);border-radius:10px;padding-left:10px;}
+  .rng input{border:none;background:transparent;font:inherit;font-size:12.5px;font-weight:600;color:var(--ink);padding:9px 6px 9px 4px;}
+  .rng input:focus{outline:none;}
+
+  main{padding:22px 28px 60px;display:grid;gap:18px;}
+  .kpis{display:grid;grid-template-columns:repeat(7,1fr);gap:14px;}
+  @media(max-width:1100px){.kpis{grid-template-columns:repeat(3,1fr);}}
+  @media(max-width:640px){.kpis{grid-template-columns:repeat(2,1fr);}}
+
+  .kpi{background:var(--card);border-radius:var(--radius);padding:16px 16px 14px;box-shadow:0 1px 2px rgba(15,23,42,.04);border:1px solid var(--line);}
+  .kpi .lbl{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;display:flex;align-items:center;gap:6px;}
+  .kpi .dot{width:8px;height:8px;border-radius:50%;background:var(--c,var(--blue));}
+  .kpi .val{font-size:29px;font-weight:800;line-height:1.1;margin-top:6px;letter-spacing:-.02em;font-variant-numeric:tabular-nums;}
+  .kpi .val small{font-size:13px;color:var(--muted);font-weight:700;margin-left:3px;}
+  .kpi .sub{font-size:11.5px;font-weight:600;margin-top:6px;color:var(--muted);}
+
+  .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:18px;}
+  .panel{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:0 1px 2px rgba(15,23,42,.04);border:1px solid var(--line);}
+  .panel-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+  .panel-head .ic{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+  .panel-head h2{margin:0;font-size:15px;font-weight:800;letter-spacing:.01em;}
+  .panel-head .sub{margin-left:auto;font-size:11px;font-weight:700;letter-spacing:.05em;color:var(--muted);text-transform:uppercase;}
+  .c7{grid-column:span 7;} .c5{grid-column:span 5;} .c12{grid-column:span 12;}
+  @media(max-width:900px){.c7,.c5{grid-column:span 12;}}
+
+  .tbl-scroll{overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{text-align:left;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;padding:8px 8px;border-bottom:1px solid var(--line);white-space:nowrap;}
+  td{padding:9px 8px;border-bottom:1px solid rgba(231,234,241,.7);font-variant-numeric:tabular-nums;vertical-align:middle;white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .num{text-align:right;} th.num{text-align:right;}
+
+  .pill{display:inline-block;font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:20px;white-space:nowrap;}
+  .ok{background:#e6f7ef;color:#16a34a;} .bad{background:#fdeaee;color:#e11d48;}
+  .warn{background:#fff3e6;color:#c2670a;} .neutral{background:#eef0ff;color:#6366f1;}
+  .muted{color:var(--muted);}
+
+  .sched-stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
+  .sched-stats .box{background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:10px 16px;min-width:104px;}
+  .sched-stats .box .l{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700;}
+  .sched-stats .box .v{font-size:24px;font-weight:800;line-height:1.1;margin-top:2px;font-variant-numeric:tabular-nums;}
+
+  .bar-row{display:grid;grid-template-columns:210px 1fr 70px 56px;align-items:center;gap:10px;margin:10px 0;}
+  .bar-row .name{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .bar-track{background:#f1f4f9;border-radius:8px;height:16px;overflow:hidden;}
+  .bar-fill{height:100%;border-radius:8px;background:linear-gradient(90deg,var(--c,var(--blue)),var(--c2,var(--indigo)));}
+  .bar-row .amt{font-size:12.5px;font-weight:700;text-align:right;}
+  .bar-row .cum{font-size:11.5px;font-weight:600;color:var(--muted);text-align:right;}
+
+  .loading{color:var(--muted);font-size:13px;padding:8px 2px;}
+  .err{color:var(--pink);font-size:12.5px;}
+  .note{background:#fff3e6;border:1px solid #f5d3b8;color:#8a5a00;border-radius:12px;padding:12px 16px;font-size:12.5px;line-height:1.6;}
+  .note b{color:#6b4400;}
+
+  .big{font-size:30px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums;}
+  .big small{font-size:12.5px;font-weight:600;color:var(--muted);margin-left:8px;letter-spacing:0;}
+  .subline{font-size:11.5px;font-weight:600;color:var(--muted);margin-top:4px;margin-bottom:10px;}
+
+  .install-btn{background:linear-gradient(135deg,var(--blue),var(--indigo));color:#fff;border:none;}
+  .install-btn:hover{filter:brightness(1.06);}
+  .install-note{margin:0;padding:12px 20px;background:#eef2ff;border-bottom:1px solid #e0e7ff;color:#3730a3;font-size:13px;font-weight:600;line-height:1.6;}
+  .install-note b{color:#312e81;}
+
+  /* mobile */
+  @media(max-width:640px){
+    header{padding:12px 14px;gap:10px;}
+    .brand h1{font-size:17px;}
+    .brand p{font-size:11px;}
+    main{padding:14px 14px 48px;gap:14px;}
+    .filters{width:100%;gap:8px;}
+    .filters .rng{flex:1 1 45%;}
+    .filters select,.filters .btn{flex:1 1 45%;}
+    .kpi{padding:13px;}
+    .kpi .val{font-size:23px;}
+    .big{font-size:26px;}
+    .panel{padding:15px;}
+    th,td{padding:7px 6px;}
+    .bar-row{grid-template-columns:120px 1fr 54px 42px;gap:8px;}
+    .sched-stats .box{min-width:88px;padding:8px 12px;}
+    .sched-stats .box .v{font-size:20px;}
+  }
+  body{ padding-bottom: env(safe-area-inset-bottom); }
+</style>
+</head>
+<body>
+<div class="top-accent"></div>
+
+<header>
+  <div class="brand">
+    <div class="brand-mark">PD</div>
+    <div>
+      <h1>Production Dashboard</h1>
+      <p>Manufacturing Performance · Static Demo</p>
+    </div>
+  </div>
+  <div class="filters">
+    <select id="sbu"><option value="">All SBUs</option></select>
+    <label class="rng">From <input type="date" id="from"></label>
+    <label class="rng">To <input type="date" id="to"></label>
+    <button class="btn" id="refresh">↻ Refresh</button>
+    <button class="btn install-btn" id="install">⬇ Download app</button>
+    <div class="asof">Data as of <b id="asof">—</b></div>
+  </div>
+</header>
+<div id="install-note" class="install-note" style="display:none"></div>
+
+<main>
+  <div class="kpis" id="kpis"></div>
+
+  <div class="grid">
+    <section class="panel c7">
+      <div class="panel-head"><div class="ic" style="background:#e8f0fe">🏭</div><h2>SBU Performance</h2><div class="sub" id="tblsub">per SBU</div></div>
+      <div class="tbl-scroll"><div id="table"></div></div>
+    </section>
+
+    <section class="panel c5" id="p-breakdown">
+      <div class="panel-head"><div class="ic" style="background:#fdeaee">⚠️</div><h2>Top 5 Breakdown</h2><div class="sub">downtime</div></div>
+      <div id="breakdown"></div>
+    </section>
+
+    <section class="panel c7" id="p-s5">
+      <div class="panel-head"><div class="ic" style="background:#fdf3e3">✨</div><h2>5S Score</h2><div class="sub" id="s5sub">per day · target 70%</div></div>
+      <div class="tbl-scroll"><div id="s5"></div></div>
+    </section>
+
+    <section class="panel c5" id="p-kaizen">
+      <div class="panel-head"><div class="ic" style="background:#e6f7ef">💡</div><h2>Kaizen</h2><div class="sub">month to date</div></div>
+      <div id="kaizen"></div>
+    </section>
+
+    <section class="panel c12" id="p-schedule">
+      <div class="panel-head"><div class="ic" style="background:#eef0ff">🛠️</div><h2>Preventive Maintenance — Schedule register</h2><div class="sub" id="schedsub">per SBU · date range</div></div>
+      <div class="tbl-scroll"><div id="schedule"></div></div>
+    </section>
+  </div>
+
+  <div class="note" id="note">
+    This is a fully static demo build. Every figure on this page is <b>simulated in your browser</b> —
+    there are no external data sources, live feeds, or network requests of any kind.
+    <b>Capacity Utilization</b> is computed as <b>Total Good Production ÷ Shift Capacity</b>.
+    <b>NPT</b> = Total Unplanned Time. <b>Top 5 Breakdown</b> aggregates simulated downtime events.
+  </div>
+</main>
+
+<script>
+(function(){
+  'use strict';
+
+  // ------------------------------------------------------------------
+  // Unit registry — simulated SBUs (all names and figures are fictional)
+  // ------------------------------------------------------------------
+  var UNITS = [
+    { name:'Northbridge Steel Ltd',                code:'NIST', pfx:'NIST', unit:'MT', cap:900,  base:{a:.91,p:.87,q:.986} },
+    { name:'Meridian Concrete Dhour',              code:'ARMCL', plant:'ARMCL-01', pfx:'ARMCL', unit:'m³', cap:1500, base:{a:.88,p:.82,q:.982} },
+    { name:'Meridian Concrete Narayanganj',        code:'ARMCL', plant:'ARMCL-02', pfx:'ARMCL', unit:'m³', cap:1100, base:{a:.86,p:.80,q:.980} },
+    { name:'Meridian Concrete Rupganj',            code:'ARMCL', plant:'ARMCL-03', pfx:'ARMCL', unit:'m³', cap:1250, base:{a:.87,p:.81,q:.981} },
+    { name:'Meridian Concrete Gazipur',            code:'ARMCL', plant:'ARMCLGP01', pfx:'ARMCL', unit:'m³', cap:1200, base:{a:.85,p:.79,q:.979} },
+    { name:'Meridian Concrete Chittagong',         code:'ARMCL', plant:'ARMCL-CSI', pfx:'ARMCL', unit:'m³', cap:1000, base:{a:.84,p:.78,q:.978} },
+    { name:'Sundara Rice Mills Ltd',               code:'SRML', pfx:'SRML', unit:'MT', cap:320,  base:{a:.90,p:.84,q:.984} },
+    { name:'Greenfield Agro Ltd',                  code:'GFAL', pfx:'GFAL', unit:'MT', cap:260,  base:{a:.88,p:.82,q:.983} },
+    { name:'Northbridge Cement (VRM)',             code:'NBCC', pfx:'NBCC', unit:'MT', cap:4200, base:{a:.92,p:.88,q:.990} },
+    { name:'Northbridge Cement (Packer)',          code:'NBCC', pfx:'NBCC', unit:'MT', cap:3500, base:{a:.90,p:.85,q:.988} },
+    { name:'Northbridge Poly Fiber (Loom U1)',     group:'Northbridge Poly Fiber Loom Unit', code:'NBPF', pfx:'NBPF', unit:'MT', cap:180, base:{a:.87,p:.83,q:.985} },
+    { name:'Northbridge Poly Fiber (Loom U2)',     group:'Northbridge Poly Fiber Loom Unit', code:'NBPF', pfx:'NBPF', unit:'MT', cap:175, base:{a:.86,p:.82,q:.984} },
+    { name:'Northbridge Poly Fiber (Tape Line)',   code:'NBPF', pfx:'NBPF', unit:'MT', cap:210, base:{a:.88,p:.84,q:.986} },
+    { name:'Northbridge Building Solution',        code:'NBSL', pfx:'NBSL', unit:'m³', cap:850, base:{a:.85,p:.80,q:.981} },
+    { name:'Northbridge Flour Mills',              code:'NFLR', pfx:'NFLR', unit:'MT', cap:540, base:{a:.90,p:.86,q:.988} },
+    { name:'Northbridge Essential Mustard Oil',    code:'NFLR', pfx:'NFLR', unit:'L',  cap:90000, base:{a:.89,p:.85,q:.987} },
+    { name:'Northbridge Feed Ltd',                 code:'NBFL', pfx:'NBFL', unit:'MT', cap:680, base:{a:.91,p:.87,q:.989} },
+    { name:'Northbridge Essential Daals Mills',    code:'NFLR', pfx:'NFLR', unit:'MT', cap:380, base:{a:.88,p:.83,q:.985} }
+  ];
+
+  var SCHEDULE_PFX = {};
+  UNITS.forEach(function(u){
+    if(!SCHEDULE_PFX[u.name]) SCHEDULE_PFX[u.name] = { pfx:u.pfx, plant:u.plant || '' };
+  });
+  SCHEDULE_PFX['Northbridge Poly Fiber Loom Unit'] = { pfx:'NBPF', plant:'' };
+
+  var GROUP_CODES = {
+    'Northbridge Steel Ltd':            ['NIST'],
+    'Northbridge Feed Ltd':             ['NBFL'],
+    'Northbridge Cement (VRM)':         ['NBCC'],
+    'Northbridge Cement (Packer)':      ['NBCC'],
+    'Northbridge Flour Mills':          ['NFLR'],
+    'Northbridge Poly Fiber Loom Unit': ['NBPF'],
+    'Northbridge Poly Fiber (Tape Line)':['NBPF'],
+    'Sundara Rice Mills Ltd':           ['SRML'],
+    'Greenfield Agro Ltd':              ['GFAL']
+  };
+
+  var SBU_NAMES = {
+    'NBFL':'Northbridge Feed Ltd', 'NBCC':'Northbridge Cement Company Ltd',
+    'NBPF':'Northbridge Poly Fiber Industry Ltd', 'SRML':'Sundara Rice Mills Ltd',
+    'GFAL':'Greenfield Agro Ltd', 'NIST':'Northbridge Steel Ltd',
+    'NFLR':'Northbridge Flour Mills Ltd'
+  };
+
+  var CATS = [
+    'Electromechanical Breakdown', 'Mechanical Breakdown', 'Electrical Breakdown',
+    'Unavailable Order', 'Setup / Changeover', 'Utility (Gas)', 'Utility (Electricity)',
+    'Raw Material Shortage', 'Manpower Shortage', 'Logistic Shortage',
+    'QCO / Quick Changeover', 'Warehouse Block', 'Others'
+  ];
+
+  // ------------------------------------------------------------------
+  // helpers
+  // ------------------------------------------------------------------
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];}); }
+  function codeNorm(s){ return String(s == null ? '' : s).toUpperCase().replace(/\s+/g, '').trim(); }
+  function ymd(y,m,d){ return y + '-' + String(m).padStart(2,'0') + '-' + String(d).padStart(2,'0'); }
+  function todayStr(){ var d = new Date(); return ymd(d.getFullYear(), d.getMonth()+1, d.getDate()); }
+  function daysAgoStr(n){ var d = new Date(); d.setDate(d.getDate() - n); return ymd(d.getFullYear(), d.getMonth()+1, d.getDate()); }
+  function addDays(s, n){
+    var p = s.split('-'); var d = new Date(+p[0], +p[1]-1, +p[2]); d.setDate(d.getDate()+n);
+    return ymd(d.getFullYear(), d.getMonth()+1, d.getDate());
+  }
+  function fmtDate(s){
+    if(!s) return '—';
+    var p = String(s).split('-');
+    var m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return (+p[2]) + ' ' + m[+p[1]-1] + ' ' + p[0];
+  }
+  function fmtDT(s, withTime){
+    if(!s) return '—';
+    var p = String(s).split('T');
+    var d = fmtDate(p[0]);
+    if(withTime && p[1]) return d + ' ' + p[1].slice(0, 5);
+    return d;
+  }
+  function sbuLabel(code){
+    var c = String(code == null ? '' : code).trim();
+    return SBU_NAMES[c] || c || '—';
+  }
+  function codesFor(sel){
+    if(!sel) return null;
+    var codes = GROUP_CODES[sel];
+    return codes ? codes.map(codeNorm) : [];
+  }
+  function clamp(v, lo, hi){ return Math.max(lo, Math.min(hi, v)); }
+
+  // deterministic PRNG
+  function hashStr(s){
+    var h = 2166136261;
+    for(var i=0;i<s.length;i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+    return h >>> 0;
+  }
+  function mulberry32(a){
+    return function(){
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      var t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+
+  // ------------------------------------------------------------------
+  // simulated data generation
+  // ------------------------------------------------------------------
+  var state = { rows:{}, s5:[], kaizen:[], schedule:[], seed:1 };
+
+  function genRows(seed){
+    var rows = {};
+    var days = 120;
+    UNITS.forEach(function(u){
+      var list = [];
+      for(var i=0; i<days; i++){
+        var date = daysAgoStr(i);
+        var rnd = mulberry32(hashStr(u.code + '|' + date + '|' + seed));
+        if(rnd() < 0.015) continue;                     // occasional off day
+        var a = clamp(u.base.a + (rnd() - 0.5) * 0.14, 0.55, 0.995);
+        var p = clamp(u.base.p + (rnd() - 0.5) * 0.18, 0.45, 1);
+        var q = clamp(u.base.q + (rnd() - 0.5) * 0.03, 0.88, 0.999);
+        var oee = a * p * q * 100;
+        var cap = Math.round(u.cap * (0.95 + rnd() * 0.1));
+        var good = Math.round(cap * a * p * q * (0.94 + rnd() * 0.05));
+        var waste = Math.round(good * (1 - q) * (1 + rnd()));
+        var npt = Math.round((1 - a) * 720 * (0.8 + rnd() * 0.5));
+        var breakdown = {};
+        var left = Math.round(npt * (0.55 + rnd() * 0.35));
+        var picks = Math.min(1 + Math.floor(rnd() * 4), CATS.length);
+        var used = {};
+        for(var k=0; k<picks && left > 0; k++){
+          var idx;
+          do { idx = Math.floor(rnd() * CATS.length); } while(used[idx]);
+          used[idx] = 1;
+          var share = k === picks - 1 ? left : Math.round(left * (0.25 + rnd() * 0.5));
+          if(share > left) share = left;
+          breakdown[CATS[idx]] = (breakdown[CATS[idx]] || 0) + share;
+          left -= share;
+        }
+        list.push({ date:date, good:good, waste:waste, cap:cap, avail:a*100, perf:p*100,
+                    qual:q*100, oee:oee, npt:npt, breakdown:breakdown });
+      }
+      rows[u.name] = list;
+    });
+    return rows;
+  }
+
+  function genS5(seed){
+    var codes = ['NBFL','NBPF','SRML','NFLR','NFLR','NIST','NBCC','NBPF','GFAL'];
+    var base = { NBFL:76, NBPF:71, SRML:68, NFLR:74, NIST:72, NBCC:79, GFAL:66 };
+    var out = [];
+    codes.forEach(function(code){
+      for(var i=0; i<90; i++){
+        var date = daysAgoStr(i);
+        var rnd = mulberry32(hashStr('s5|' + code + '|' + date + '|' + seed));
+        if(rnd() > 0.42) continue;
+        var n = 1 + Math.floor(rnd() * 2);
+        for(var j=0; j<n; j++){
+          var score = clamp((base[code] || 72) + (rnd() - 0.5) * 22, 35, 99);
+          out.push({ date:date, sbu:code, score:Math.round(score * 10) / 10 });
+        }
+      }
+    });
+    return out;
+  }
+
+  function genKaizen(seed){
+    var codes = ['NBFL','NBPF','SRML','NFLR','NIST','NBCC','GFAL'];
+    var out = [];
+    codes.forEach(function(code){
+      for(var i=0; i<35; i++){
+        var date = daysAgoStr(i);
+        var rnd = mulberry32(hashStr('kz|' + code + '|' + date + '|' + seed));
+        if(rnd() > 0.22) continue;
+        var n = 1 + Math.floor(rnd() * 3);
+        for(var j=0; j<n; j++){
+          out.push({ date:date, sbu:code, card:'KZN-' + String(1000 + Math.floor(rnd() * 9000)) });
+        }
+      }
+    });
+    return out;
+  }
+
+  function genSchedule(seed){
+    var STATUS = [1,2,3,4];
+    var assets = ['Compressor','Ball Mill','Packing Line','Conveyor','Boiler','Generator','Mixer','Loom','Extruder','Tape Line','Roller','Chiller'];
+    var out = [];
+    UNITS.forEach(function(u){
+      var rnd = mulberry32(hashStr('pm|' + u.name + '|' + seed));
+      var count = 5 + Math.floor(rnd() * 4);
+      for(var i=0; i<count; i++){
+        var day = rnd() < 0.7 ? Math.floor(rnd() * 14) : Math.floor(rnd() * 90);
+        var date = daysAgoStr(day);
+        var asset = (u.plant ? u.plant + ' — ' : '') + assets[Math.floor(rnd() * assets.length)] + ' ' + (1 + Math.floor(rnd() * 4));
+        var status = STATUS[Math.floor(rnd() * STATUS.length)];
+        var startDay = addDays(date, Math.floor(rnd() * 3));
+        var endDay = addDays(startDay, 1 + Math.floor(rnd() * 4));
+        var done = status === 4;
+        out.push({
+          scheduleNo: 'PSM-' + u.pfx + '-' + String(2000 + Math.floor(rnd() * 8000)),
+          asset: asset,
+          plant: u.plant || '',
+          pfx: u.pfx,
+          maintenanceDate: date,
+          estStart: startDay + 'T' + String(8 + Math.floor(rnd() * 6)).padStart(2,'0') + ':00',
+          estEnd: endDay + 'T' + String(14 + Math.floor(rnd() * 5)).padStart(2,'0') + ':00',
+          actualStart: (status >= 3) ? startDay + 'T' + String(9 + Math.floor(rnd() * 5)).padStart(2,'0') + ':15' : null,
+          actualEnd: done ? endDay + 'T' + String(15 + Math.floor(rnd() * 4)).padStart(2,'0') + ':40' : null,
+          status: status,
+          note: status === 4 ? 'Completed as planned' : (status === 3 ? 'In progress' : (status === 2 ? 'Awaiting spares' : 'Scheduled'))
+        });
+      }
+    });
+    out.sort(function(a,b){ return a.maintenanceDate < b.maintenanceDate ? 1 : -1; });
+    return out;
+  }
+
+  function generateAll(){
+    state.rows = genRows(state.seed);
+    state.s5 = genS5(state.seed);
+    state.kaizen = genKaizen(state.seed);
+    state.schedule = genSchedule(state.seed);
+  }
+
+  // ------------------------------------------------------------------
+  // aggregation
+  // ------------------------------------------------------------------
+  function aggregate(members, from, to){
+    var r = { name: (members[0].group || members[0].name), n:0, good:0, npt:0, cap:0,
+              oee:0, avail:0, perf:0, qual:0, no:0, na:0, np:0, nq:0,
+              cu:0, cuN:0, unit:'', waste:0, wasteUnit:'', breakdown:{} };
+    members.forEach(function(u){
+      if(!r.unit) r.unit = u.unit;
+      if(!r.wasteUnit) r.wasteUnit = u.unit;
+      var rows = state.rows[u.name] || [];
+      for(var i=0; i<rows.length; i++){
+        var row = rows[i];
+        if(!row.date || row.date < from || row.date > to) continue;
+        r.n++;
+        r.good += row.good;
+        r.waste += row.waste;
+        r.cap += row.cap;
+        if(row.cap > 0){ r.cu += row.good / row.cap; r.cuN++; }
+        r.npt += row.npt;
+        if(row.oee != null){ r.oee += row.oee; r.no++; }
+        if(row.avail != null){ r.avail += row.avail; r.na++; }
+        if(row.perf != null){ r.perf += row.perf; r.np++; }
+        if(row.qual != null){ r.qual += row.qual; r.nq++; }
+        for(var k in row.breakdown){ r.breakdown[k] = (r.breakdown[k] || 0) + row.breakdown[k]; }
+      }
+    });
+    r.oee = r.no ? r.oee / r.no : null;
+    r.avail = r.na ? r.avail / r.na : null;
+    r.perf = r.np ? r.perf / r.np : null;
+    r.qual = r.nq ? r.qual / r.nq : null;
+    r.capUtil = r.cuN ? (r.cu / r.cuN * 100) : null;
+    return r;
+  }
+
+  // ------------------------------------------------------------------
+  // render
+  // ------------------------------------------------------------------
+  function render(){
+    var from = document.getElementById('from').value;
+    var to = document.getElementById('to').value;
+    var sel = document.getElementById('sbu').value;
+
+    var groups = {};
+    UNITS.forEach(function(u){ (groups[u.group || u.name] = groups[u.group || u.name] || []).push(u); });
+    var keys = Object.keys(groups).filter(function(g){ return !sel || g === sel; });
+    var results = keys.map(function(g){ return aggregate(groups[g], from, to); });
+
+    ['kpis', 'p-breakdown'].forEach(function(id){
+      var el = document.getElementById(id);
+      if(el) el.style.display = sel ? '' : 'none';
+    });
+    var schedEl = document.getElementById('p-schedule');
+    if(schedEl) schedEl.style.display = (sel && SCHEDULE_PFX[sel]) ? '' : 'none';
+
+    document.getElementById('asof').textContent = (from === to) ? from : (from + ' → ' + to);
+    renderKpis(results);
+    renderTable(results, sel);
+    renderBreakdown(results);
+    renderS5(from, to, sel);
+    renderKaizen(sel);
+    renderSchedule(sel, from, to);
+  }
+
+  function renderS5(from, to, sel){
+    var codes = codesFor(sel);
+    var list = (state.s5 || []).filter(function(x){
+      if(x.date < from || x.date > to) return false;
+      if(codes) return codes.indexOf(codeNorm(x.sbu)) >= 0;
+      return true;
+    });
+    var g = {};
+    list.forEach(function(x){
+      var k = x.sbu + '|' + x.date;
+      if(!g[k]) g[k] = { sbu:x.sbu, date:x.date, sum:0, n:0 };
+      g[k].sum += x.score; g[k].n++;
+    });
+    var rows = Object.keys(g).map(function(k){ return g[k]; });
+    rows.sort(function(a,b){
+      var la = sbuLabel(a.sbu), lb = sbuLabel(b.sbu);
+      if(la !== lb) return la < lb ? -1 : 1;
+      return a.date < b.date ? 1 : -1;
+    });
+    var seenSbu = {};
+    rows.forEach(function(r){ seenSbu[r.sbu] = 1; });
+    var nSbu = Object.keys(seenSbu).length;
+    var avg = list.length ? list.reduce(function(s, x){ return s + x.score; }, 0) / list.length : null;
+    var pass = list.filter(function(x){ return x.score >= 70; }).length;
+
+    var html = '<div class="big">' + (avg == null ? '—' : avg.toFixed(1) + '%') +
+      '<small>avg 5S · ' + nSbu + ' SBUs · ' + list.length + ' audits</small></div>' +
+      '<div class="subline">' + pass + ' of ' + list.length + ' at/above 70% · ' +
+      (from === to ? fmtDate(from) : fmtDate(from) + ' → ' + fmtDate(to)) + '</div>';
+
+    if(!rows.length){
+      html += '<div class="loading">No 5S audits in this range.</div>';
+    } else {
+      html += '<div style="max-height:300px;overflow:auto"><table><thead><tr>' +
+        '<th>SBU</th><th>Date</th><th class="num">Score</th><th class="num">Audits</th><th class="num">Status</th></tr></thead><tbody>';
+      rows.slice(0, 300).forEach(function(r){
+        var avgRow = r.sum / r.n;
+        var ok = avgRow >= 70;
+        html += '<tr><td><b>'+esc(sbuLabel(r.sbu))+'</b></td>' +
+          '<td class="muted">'+fmtDate(r.date)+'</td>' +
+          '<td class="num">'+avgRow.toFixed(1)+'%</td>' +
+          '<td class="num muted">'+r.n+'</td>' +
+          '<td class="num"><span class="pill '+(ok?'ok':'bad')+'">'+(ok?'OK':'Below')+'</span></td></tr>';
+      });
+      html += '</tbody></table></div>';
+      if(rows.length > 300) html += '<div class="subline" style="margin-top:8px">…and '+(rows.length-300)+' more</div>';
+    }
+    document.getElementById('s5').innerHTML = html;
+    document.getElementById('s5sub').textContent = 'per SBU · target 70%';
+  }
+
+  function renderKaizen(sel){
+    var codes = codesFor(sel);
+    var now = new Date();
+    var ms = ymd(now.getFullYear(), now.getMonth() + 1, 1);
+    var me = todayStr();
+    var list = (state.kaizen || []).filter(function(x){
+      if(x.date < ms || x.date > me) return false;
+      if(codes) return codes.indexOf(codeNorm(x.sbu)) >= 0;
+      return true;
+    });
+    var by = {};
+    list.forEach(function(x){ by[x.sbu] = (by[x.sbu] || 0) + 1; });
+    var sbus = Object.keys(by).sort(function(a,b){ return by[b] - by[a]; });
+    var monthName = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][now.getMonth()];
+
+    var html = '<div class="big">' + list.length + '<small>cards · ' + monthName + ' ' + now.getFullYear() + '</small></div>' +
+      '<div class="subline">' + sbus.length + ' SBUs · ' + ms + ' → ' + me + '</div>';
+
+    if(!sbus.length){
+      html += '<div class="loading">No Kaizen cards this month.</div>';
+    } else {
+      var max = by[sbus[0]];
+      html += '<table><thead><tr><th>SBU</th><th class="num">Cards</th></tr></thead><tbody>';
+      sbus.forEach(function(s){
+        html += '<tr><td><b>'+esc(sbuLabel(s))+'</b>' +
+          '<div class="bar-track" style="margin-top:5px"><div class="bar-fill" style="width:'+(by[s]/max*100)+'%;--c:#16a34a;--c2:#0d9488"></div></div></td>' +
+          '<td class="num"><b>'+by[s]+'</b></td></tr>';
+      });
+      html += '</tbody></table>';
+    }
+    document.getElementById('kaizen').innerHTML = html;
+  }
+
+  function renderSchedule(sel, from, to){
+    var box = document.getElementById('schedule');
+    var sub = document.getElementById('schedsub');
+    var m = sel ? SCHEDULE_PFX[sel] : null;
+    if(!m){ box.innerHTML = ''; return; }
+    var label = m.pfx + (m.plant ? ' · ' + m.plant : '');
+    if(sub) sub.textContent = label + ' · ' + (from === to ? fmtDate(from) : fmtDate(from) + ' → ' + fmtDate(to));
+    var STATUS = { 1:'Open', 2:'Pending', 3:'Work in progress', 4:'Done' };
+    var rows = state.schedule.filter(function(r){
+      if(r.pfx !== m.pfx) return false;
+      if(m.plant && r.plant !== m.plant) return false;
+      if(r.maintenanceDate < from || r.maintenanceDate > to) return false;
+      return true;
+    });
+    if(!rows.length){
+      box.innerHTML = '<div class="loading">No schedule rows for ' + esc(label) + ' in this date range.</div>';
+      return;
+    }
+    var counts = { 1:0, 2:0, 3:0, 4:0 };
+    rows.forEach(function(r){ if(counts[r.status] != null) counts[r.status]++; });
+    var strip = '<div class="sched-stats">' +
+      '<div class="box"><div class="l">Open</div><div class="v" style="color:#2563eb">' + counts[1] + '</div></div>' +
+      '<div class="box"><div class="l">Pending</div><div class="v" style="color:#d97706">' + counts[2] + '</div></div>' +
+      '<div class="box"><div class="l">Work in progress</div><div class="v" style="color:#d97706">' + counts[3] + '</div></div>' +
+      '<div class="box"><div class="l">Done</div><div class="v" style="color:#16a34a">' + counts[4] + '</div></div>' +
+      '<div class="box"><div class="l">Total</div><div class="v">' + rows.length + '</div></div>' +
+      '</div>';
+    var html = strip + '<table><thead><tr><th>Schedule No</th><th>Asset</th><th class="num">Maint. Date</th>' +
+      '<th class="num">Est. Start</th><th class="num">Est. End</th><th class="num">Actual Start</th><th class="num">Actual End</th>' +
+      '<th>Status</th><th>Note</th></tr></thead><tbody>';
+    rows.forEach(function(r){
+      var st = r.status == null ? '—' : (STATUS[r.status] || String(r.status));
+      var cls = r.status === 4 ? 'ok' : (r.status === 3 ? 'warn' : 'neutral');
+      html += '<tr><td><b>' + esc(r.scheduleNo) + '</b></td>' +
+        '<td>' + esc(r.asset) + '</td>' +
+        '<td class="num muted">' + fmtDT(r.maintenanceDate) + '</td>' +
+        '<td class="num muted">' + fmtDT(r.estStart, true) + '</td>' +
+        '<td class="num muted">' + fmtDT(r.estEnd, true) + '</td>' +
+        '<td class="num muted">' + fmtDT(r.actualStart, true) + '</td>' +
+        '<td class="num muted">' + fmtDT(r.actualEnd, true) + '</td>' +
+        '<td><span class="pill ' + cls + '">' + esc(st) + '</span></td>' +
+        '<td class="muted">' + esc(r.note || '') + '</td></tr>';
+    });
+    html += '</tbody></table>' +
+      '<div class="subline" style="margin-top:8px">' + rows.length + ' row' + (rows.length === 1 ? '' : 's') + '</div>';
+    box.innerHTML = html;
+  }
+
+  function pct(v, d){
+    if(v == null) return '<span class="muted">—</span>';
+    return v.toFixed(d==null?1:d) + '%';
+  }
+  function oeePill(v){
+    if(v == null) return '<span class="muted">—</span>';
+    var cls = v >= 85 ? 'ok' : (v >= 60 ? 'warn' : 'bad');
+    return '<span class="pill ' + cls + '">' + v.toFixed(1) + '%</span>';
+  }
+  function fmtNum(v){
+    if(v == null) return '—';
+    return Math.round(v).toLocaleString();
+  }
+  function fmtNpt(mins){
+    if(mins == null) return '—';
+    var m = Math.round(mins);
+    var h = Math.floor(m/60), r = m%60;
+    return (h>0 ? h+'h ' : '') + r + 'm';
+  }
+
+  function renderKpis(results){
+    var o = { oee:0, avail:0, perf:0, no:0, na:0, np:0, good:0, npt:0, waste:0, cu:0, cuN:0 };
+    results.forEach(function(r){
+      o.good += r.good || 0;
+      o.npt  += r.npt || 0;
+      o.waste += r.waste || 0;
+      if(r.oee != null){ o.oee += r.oee; o.no++; }
+      if(r.avail != null){ o.avail += r.avail; o.na++; }
+      if(r.perf != null){ o.perf += r.perf; o.np++; }
+      if(r.capUtil != null){ o.cu += r.capUtil; o.cuN++; }
+    });
+    var oee = o.no ? o.oee/o.no : null;
+    var avail = o.na ? o.avail/o.na : null;
+    var perf = o.np ? o.perf/o.np : null;
+    var capUtil = o.cuN ? o.cu/o.cuN : null;
+
+    var units = {};
+    results.forEach(function(r){ if(r.n > 0 && r.unit) units[r.unit] = 1; });
+    var uk = Object.keys(units);
+    var goodUnit = uk.length === 1 ? uk[0] : '';
+
+    var wunits = {};
+    results.forEach(function(r){ if(r.n > 0 && r.wasteUnit) wunits[r.wasteUnit] = 1; });
+    var wk = Object.keys(wunits);
+    var wasteUnit = wk.length === 1 ? wk[0] : '';
+
+    var cards = [
+      { lbl:'OEE',        val: oee==null?'—':oee.toFixed(1), unit:'%', c:'#2563eb' },
+      { lbl:'Availability', val: avail==null?'—':avail.toFixed(1), unit:'%', c:'#16a34a' },
+      { lbl:'Performance',  val: perf==null?'—':perf.toFixed(1), unit:'%', c:'#0d9488' },
+      { lbl:'Capacity Util.', val: capUtil==null?'—':capUtil.toFixed(1), unit:'%', c:'#d97706' },
+      { lbl:'Good Production', val: fmtNum(o.good), unit: goodUnit, c:'#16a34a' },
+      { lbl:'Wastage',     val: fmtNum(o.waste), unit: wasteUnit, c:'#db2777' },
+      { lbl:'NPT Time',    val: fmtNpt(o.npt), unit:'', c:'#e11d48' }
+    ];
+    var reporting = results.filter(function(r){ return r.n > 0; }).length;
+    var offCount = results.filter(function(r){ return r.n === 0; }).length;
+    var subTxt = reporting + ' reporting' + (offCount ? ' · ' + offCount + ' off' : '');
+    document.getElementById('kpis').innerHTML = cards.map(function(k){
+      return '<div class="kpi" style="--c:'+k.c+'">' +
+        '<div class="lbl"><span class="dot"></span>'+esc(k.lbl)+'</div>' +
+        '<div class="val">'+k.val+'<small>'+esc(k.unit)+'</small></div>' +
+        '<div class="sub">'+subTxt+'</div>' +
+        '</div>';
+    }).join('');
+  }
+
+  function renderTable(results, sel){
+    var withData = results.filter(function(r){ return r.n > 0; });
+    withData.sort(function(a,b){ return (b.oee==null?-1:b.oee) - (a.oee==null?-1:a.oee); });
+    var off = results.filter(function(r){ return r.n === 0; });
+    off.sort(function(a,b){ return a.name < b.name ? -1 : 1; });
+
+    var html = '<table><thead><tr>' +
+      '<th>SBU</th><th class="num">OEE</th><th class="num">Availability</th>' +
+      '<th class="num">Performance</th><th class="num">Quality</th><th class="num">Capacity Util.</th>' +
+      '<th class="num">Good Production</th><th class="num">Wastage</th><th class="num">NPT</th>' +
+      '</tr></thead><tbody>';
+
+    withData.forEach(function(r){
+      html += '<tr><td><b>'+esc(r.name)+'</b></td>' +
+        '<td class="num">'+oeePill(r.oee)+'</td>' +
+        '<td class="num">'+pct(r.avail)+'</td>' +
+        '<td class="num">'+pct(r.perf)+'</td>' +
+        '<td class="num">'+pct(r.qual)+'</td>' +
+        '<td class="num">'+pct(r.capUtil)+'</td>' +
+          '<td class="num">'+fmtNum(r.good)+(r.unit?' <span class="muted" style="font-size:11px">'+esc(r.unit)+'</span>':'')+'</td>' +
+          '<td class="num">'+fmtNum(r.waste)+(r.wasteUnit?' <span class="muted" style="font-size:11px">'+esc(r.wasteUnit)+'</span>':'')+'</td>' +
+          '<td class="num">'+fmtNpt(r.npt)+'</td></tr>';
+    });
+
+    off.forEach(function(r){
+      html += '<tr><td><b>'+esc(r.name)+'</b></td>' +
+        '<td colspan="8"><span class="pill warn">Production Off</span>' +
+        ' <span class="muted">no data in this range</span></td></tr>';
+    });
+
+    if(!results.length){
+      html += '<tr><td colspan="9" class="muted">No SBUs selected.</td></tr>';
+    }
+    html += '</tbody></table>';
+
+    var n = withData.length, o = off.length;
+    document.getElementById('tblsub').textContent = (sel ? sel + ' · ' : '') + n + ' reporting' +
+      (o ? ' · ' + o + ' off' : '');
+    document.getElementById('table').innerHTML = html;
+  }
+
+  function renderBreakdown(results){
+    var m = {};
+    results.forEach(function(r){ for(var k in r.breakdown){ m[k] = (m[k]||0) + r.breakdown[k]; } });
+    var arr = Object.keys(m).map(function(k){ return { name:k, min:m[k] }; });
+    arr.sort(function(a,b){ return b.min - a.min; });
+    var top = arr.slice(0, 5);
+    var total = arr.reduce(function(s,x){ return s + x.min; }, 0);
+
+    if(!top.length){
+      document.getElementById('breakdown').innerHTML = '<div class="loading">No breakdown data for this date.</div>';
+      return;
+    }
+    var max = top[0].min;
+    var cum = 0;
+    var html = '<div style="margin-bottom:4px">';
+    top.forEach(function(x, i){
+      cum += x.min;
+      var color = ['#e11d48','#f97316','#f59e0b','#6366f1','#2563eb'][i];
+      html += '<div class="bar-row">' +
+        '<div class="name">'+esc(x.name)+'</div>' +
+        '<div class="bar-track"><div class="bar-fill" style="width:'+(x.min/max*100)+'%;--c:'+color+';--c2:'+color+'"></div></div>' +
+        '<div class="amt">'+Math.round(x.min)+' min</div>' +
+        '<div class="cum">'+ (total? (cum/total*100).toFixed(1):'0') +'%</div>' +
+        '</div>';
+    });
+    html += '</div>';
+    html += '<div class="muted" style="font-size:12px;margin-top:6px">Total downtime (top 5): <b>'+Math.round(total)+' min</b></div>';
+    document.getElementById('breakdown').innerHTML = html;
+  }
+
+  // ------------------------------------------------------------------
+  // boot
+  // ------------------------------------------------------------------
+  function populateSbuFilter(){
+    var sel = document.getElementById('sbu');
+    var seen = {};
+    UNITS.forEach(function(u){
+      var g = u.group || u.name;
+      if(seen[g]) return; seen[g] = true;
+      var o = document.createElement('option');
+      o.value = g; o.textContent = g;
+      sel.appendChild(o);
+    });
+  }
+
+  function initDates(){
+    var fe = document.getElementById('from'), te = document.getElementById('to');
+    var today = todayStr(), start = daysAgoStr(120), yesterday = daysAgoStr(1);
+    fe.min = start; te.min = start;
+    fe.max = today; te.max = today;
+    fe.value = daysAgoStr(7); te.value = yesterday;
+  }
+
+  function refresh(regenerate){
+    if(regenerate){
+      state.seed = (state.seed + 1) % 100000;
+      generateAll();
+    }
+    render();
+  }
+
+  document.getElementById('from').addEventListener('change', render);
+  document.getElementById('to').addEventListener('change', render);
+  document.getElementById('sbu').addEventListener('change', render);
+  document.getElementById('refresh').addEventListener('click', function(){ refresh(true); });
+
+  populateSbuFilter();
+  initDates();
+  generateAll();
+  render();
+})();
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  var _hadCtrl = !!navigator.serviceWorker.controller;
+  var _reloading = false;
+  navigator.serviceWorker.addEventListener('controllerchange', function () {
+    if (!_hadCtrl) { _hadCtrl = true; return; }
+    if (_reloading) return;
+    _reloading = true;
+    window.location.reload();
+  });
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('sw.js').catch(function () {});
+  });
+}
+</script>
+<script>
+(function () {
+  var btn = document.getElementById('install');
+  var note = document.getElementById('install-note');
+  var deferred = null;
+  function noteMsg(html, ms) {
+    if (!note) return;
+    note.innerHTML = html;
+    note.style.display = '';
+    if (ms) setTimeout(function () { note.style.display = 'none'; }, ms);
+  }
+  function isStandalone() {
+    return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+  }
+  function alreadyInstalled() {
+    if (isStandalone()) return true;
+    if (btn && btn.disabled) return true;
+    return false;
+  }
+  window.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault();
+    deferred = e;
+  });
+  window.addEventListener('appinstalled', function () {
+    deferred = null;
+    if (btn) { btn.textContent = '✓ App installed'; btn.disabled = true; }
+    noteMsg('<b>Installed.</b> Open it from your phone’s home screen.', 6000);
+  });
+  if (btn) {
+    btn.addEventListener('click', function () {
+      if (alreadyInstalled()) { noteMsg('This app is already installed on this device.', 5000); return; }
+      if (deferred) {
+        deferred.prompt();
+        deferred.userChoice.then(function (c) {
+          if (c && c.outcome === 'accepted' && btn) { btn.textContent = '✓ App installed'; btn.disabled = true; }
+          deferred = null;
+        });
+        return;
+      }
+      var ua = navigator.userAgent || '';
+      if (/iphone|ipad|ipod/i.test(ua)) {
+        noteMsg('<b>Install on iPhone:</b> open the <b>Share</b> icon &rarr; <b>Add to Home Screen</b>.', 12000);
+      } else if (/android/i.test(ua)) {
+        noteMsg('<b>Install on Android:</b> open the browser menu (&vellip;) &rarr; <b>Install app</b> / <b>Add to Home screen</b>. If you don’t see it, reload the page once.', 12000);
+      } else {
+        noteMsg('<b>To install:</b> open this page on your phone in Chrome (Android) or Safari (iPhone), then choose <b>Install app</b> / <b>Add to Home Screen</b>.', 12000);
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>
